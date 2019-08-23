@@ -36,8 +36,9 @@ CREATE TABLE Orders
     """
 myCursor.execute(orders_sql)
 
+tempCwid = 123456789
+number = 50.00
 
-
-myCursor.execute("""INSERT INTO Orders (cwid,item_price) VALUES (889456472, 100.00)""")
+myCursor.execute("""INSERT INTO Orders (cwid,item_price) VALUES (?,?)""",(tempCwid, number))
 connection.commit()
 connection.close()

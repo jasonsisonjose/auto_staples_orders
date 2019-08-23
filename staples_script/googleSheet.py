@@ -1,6 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
+from staples_script.spiders import StaplesSpider
 class Scholar():
     def __init__(self, cwid, first_name, last_name, cohort):
         self.cwid = cwid
@@ -54,6 +54,7 @@ while row_num < workSheet.row_count:
         #insert tempCwid and tempQuantity in the database
 
         #use the item link to activate the spider and grab Staples Information
+        StaplesSpider.start_urls.append("this shit")
     else:
         print("\nYou aren't simply a clown, for you are the entire circus. Learn to copy and paste a fucking link")
     #this for loop, gets the attributes of the records one by one.
