@@ -1,6 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from staples_script.spiders import StaplesSpider
+#from staples_script.spiders import StaplesSpider
 class Scholar():
     def __init__(self, cwid, first_name, last_name, cohort):
         self.cwid = cwid
@@ -24,6 +24,23 @@ client = gspread.authorize(creds)
 # Make sure you use the right name here.
 workSheet = client.open("Staple_Order_Request").sheet1
 
+#this is to make it general, so you don't have to hardcode the indices in the
+dictionary = {}
+index = 0
+print(workSheet.row_values(1))
+for variable_name in workSheet.row_values(1):
+    var_underscore = variable_name.replace(" ", "_")
+    dictionary.update({})
+    dictionary['var_underscore'] = index
+    index += 1
+    print (var_underscore,":", dictionary['var_underscore'])
+
+record = workSheet.row_values(3)
+
+for element in dictionary:
+    print ("this shit is: ",element)
+
+"""
 # Extract and print each row
 #row_num is 2 because the first row is just the variable names, so the data we want actuallt starts on row 2
 row_num = 2
@@ -59,3 +76,4 @@ while row_num < workSheet.row_count:
         print("\nYou aren't simply a clown, for you are the entire circus. Learn to copy and paste a fucking link")
     #this for loop, gets the attributes of the records one by one.
     row_num += 1
+"""
