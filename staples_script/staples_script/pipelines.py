@@ -4,77 +4,35 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
 import sqlite3
-
+from sqlite3_script import insertScholar, insertOrder, updateOrder
+from globals import *
+import globals
 
 
 class StaplesScriptPipeline(object):
-
-    def __init__ (self):
+    '''
+    def __init__(self):
         self.create_connection()
-        self.create_table()
 
     def create_connection(self):
-        self.myConnection = sqlite3.connect("scholars.db")
-        self.myCursor = self.myConnection.cursor()
+        self.connection = sqlite3.connect("scholars.db", timeout=10)
+        self.myCursor = self.connection.cursor()
 
-    def create_table(self):
-        dropCommand = """DROP TABLE IF EXISTS Scholars"""
-        self.myCursor.execute(dropCommand)
-        self.myConnection.commit()
-
-        scholars_sql = """
-        CREATE TABLE Scholars
-            (
-            cwid integer PRIMARY KEY,
-            first_name varchar(20) NOT NULL,
-            last_name varchar(20) NOT NULL,
-            acct_balance real NOT NULL,
-            cohort varchar(20) NOT NULL
-            )
+    def updateOrder(self, item, order_id):
+        #NEED TO ADD ITEM_PRICE
+        updateSql = """
+            UPDATE Orders
+            set item_name = ?,
+                item_number = ?
+            where order_id = ?
             """
+        self.myCursor.execute(updateSql, (item['item_name'], item['item_num'], order_id))
+        self.connection.commit()
 
-        self.myCursor.execute(scholars_sql)
-        self.myConnection.commit()
-
-        dropCommand = """DROP TABLE IF EXISTS Orders"""
-        self.myCursor.execute(dropCommand)
-        self.myConnection.commit()
-        orders_sql = """
-        CREATE TABLE Orders
-            (
-            cwid integer PRIMARY KEY,
-            item_number integer NOT NULL,
-            item_name varchar(20) NOT NULL,
-            item_price real NOT NULL,
-            item_quantity integer NOT NULL
-            )
-            """
-        self.myCursor.execute(orders_sql)
-        self.myConnection.commit()
-
-        dropCommand = """DROP TABLE IF EXISTS Products"""
-        self.myCursor.execute(dropCommand)
-        self.myConnection.commit()
-        products_sql = """
-        CREATE TABLE Products
-            (
-            item_number integer NOT NULL,
-            item_name varchar(20) NOT NULL,
-            )
-            """
-        #self.myCursor.execute(products_sql)
-        #self.myConnection.commit()
+        '''
 
     def process_item(self, item, spider):
-        self.insert_into_db(item)
+        #self.updateOrder(item, globals.order_id)
+        print (item["item_num"], item["item_name"])
         return item
-
-
-    def insert_into_db(self, item):
-        insertCommand = """INSERT INTO Orders VALUES (?,?)"""(
-            item['item_num'], item['item_name']
-        )
-        self.myCursor.execute(insertCommand)
-        self.myConnection.commit()

@@ -3,30 +3,31 @@
 # Define here the models for your scraped items
 #
 # See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
-import unicodedata
 import re
 import scrapy
 from scrapy.loader.processors import MapCompose, TakeFirst
 from w3lib.html import remove_tags
 
-def remove_words(unicode_value):
-    #currently the extracted data is in unicode, so we make it into a string
-    string_value = unicode_value.encode('ascii','ignore')
+def remove_words(string_value):
     #after we have it into a string, we can finally manipulate it, so in this case we remove everything that isn't letters or numbers
     newString = re.sub("[^\w]", "", string_value)
     #now that we have just letters and numbers, we remove the numbers to get the item number
     number =  re.sub("\D","", newString)
+    #print(type(number), number)
     return (number)
 
-def remove_symbols(unicode_value):
-    #currently the extracted data is in unicode, so we make it into a string
-    string_value = unicode_value.encode('ascii','ignore')
-    return (string_value)
+def remove_symbols(string_value):
+    #this gets rid of spaces, and other characters that aren't letters or numbers and subtitutes them with a space
+    newString = re.sub("[^\w]", " ", string_value)
+    #this getse rid of duplicate whitespaces
+    finalString = re.sub(r'\s+', ' ', newString)
+    return (finalString)
 
 def remove_second_half(string_data):
     first_half = string_data.split('(')
+    #print ("THIS IS THE SHIT: ",type(first_half), first_half)
     return (first_half)
+
 
 
 class StaplesScriptItem(scrapy.Item):
@@ -37,7 +38,7 @@ class StaplesScriptItem(scrapy.Item):
         output_processor = TakeFirst()
     )
     item_name = scrapy.Field(
-        input_processor = MapCompose(remove_tags,remove_symbols, remove_second_half),
+        input_processor = MapCompose(remove_tags, remove_symbols, remove_second_half),
         output_processor = TakeFirst()
         )
     item_price = scrapy.Field()
