@@ -1,19 +1,12 @@
 import gspread
+import scrapy
+from scrapy.crawler import CrawlerProcess
+from scrapy.utils.project import get_project_settings
 from oauth2client.service_account import ServiceAccountCredentials
-#from staples_script.spiders import StaplesSpider
-class Scholar():
-    def __init__(self, cwid, first_name, last_name, cohort):
-        self.cwid = cwid
-        self.first_name = first_name
-        self.last_name = last_name
-        self.cohort = cohort
+from globals import Scholar, Order
+import globals
+from sqlite3_script import insertScholar, insertOrder, getOrderId
 
-class Order():
-    def __init__(self, cwid, item_num, quantity, item_link):
-        self.cwid = cwid
-        self.item_num = item_num
-        self.quantity = quantity
-        self.item_link = item_link
 
 # use creds to create a client to interact with the Google Drive API
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -24,56 +17,64 @@ client = gspread.authorize(creds)
 # Make sure you use the right name here.
 workSheet = client.open("Staple_Order_Request").sheet1
 
-#this is to make it general, so you don't have to hardcode the indices in the
-dictionary = {}
+# item index is a dynamic dictionary that stores the variable_names and connects it to the index it is located at
+# this is so I don't have to use integers for the indices and can be more flexible by just using variable names
+item_index = {}
 index = 0
-print(workSheet.row_values(1))
 for variable_name in workSheet.row_values(1):
     var_underscore = variable_name.replace(" ", "_")
-    dictionary.update({})
-    dictionary['var_underscore'] = index
+    item_index.update({})
+    item_index[var_underscore] = index
     index += 1
-    print (var_underscore,":", dictionary['var_underscore'])
 
-record = workSheet.row_values(3)
-
-for element in dictionary:
-    print ("this shit is: ",element)
-
-"""
+for key in item_index:
+    print (key, item_index[key])
+tempItem_list = []
 # Extract and print each row
-#row_num is 2 because the first row is just the variable names, so the data we want actuallt starts on row 2
+# the first row is just variable names, so we want the 2nd row
 row_num = 2
 #this while condition loops until it goes to the end of the number of rows
 while row_num < workSheet.row_count:
+
     #if the returned list is empty, that means there is no data for us to use, so don't loop anymore
     if workSheet.row_values(row_num) == []:
         break
-    #if the returned list is NOT empt, then save that list under the variable record
+    #if the returned list is NOT empty, then save that list under the variable record
     record = workSheet.row_values(row_num)
-    #the way I have it set up, the 5th index is the URL Item Link, so it checks if it is a valid link for staples advantage
 
-    if record[5].find("advantage") != -1:
-        tempCwid = record[2]
-        tempFN = record[3]
-        tempLN = record[4]
-        tempCohort = record[8]
+    #if the item link has the word "advantage", in it, it is now considered a valid link
+    if record[item_index["Item_Link"]].find("advantage") != -1:
+        tempCwid = record[item_index["CWID"]]
+        tempFN = record[item_index["First_Name"]]
+        tempLN = record[item_index["Last_Name"]]
+        tempCohort = record[item_index["Cohort"]]
         tempScholar = Scholar(tempCwid, tempFN, tempLN, tempCohort)
-        print (tempScholar.__dict__)
         print ("Hey good job, this is a valid link")
+
+        insertScholar(tempScholar)
+
         #insert into the database, if it is already there then so the program knows that the order belongs to this scholar
 
-        tempItem_num = record[6]
-        tempQuantity = record[7]
-        tempItem_link = record[5]
-
+        tempItem_num = record[item_index["Item_Number"]]
+        tempQuantity = record[item_index["Quantity_of_Desired_Items"]]
+        tempItem_link = record[item_index["Item_Link"]]
         tempOrder = Order(tempCwid, tempItem_num, tempQuantity, tempItem_link)
         #insert tempCwid and tempQuantity in the database
+        insertOrder(tempScholar, tempOrder)
+        globals.order_id = getOrderId(tempScholar, tempOrder)
 
+        tempItem_list.append(tempItem_link)
+        print ("THIS IS THE MOTHERFUCKING LIST: ",tempItem_list)
         #use the item link to activate the spider and grab Staples Information
-        StaplesSpider.start_urls.append("this shit")
+        process = CrawlerProcess(get_project_settings())
+
+        # 'staples' is the name of one of the spiders of the project.
+        #start_urls must be a list not a string!
+        process.crawl('staples', start_urls= tempItem_list)
+        tempItem_list.pop(0)
     else:
         print("\nYou aren't simply a clown, for you are the entire circus. Learn to copy and paste a fucking link")
+
     #this for loop, gets the attributes of the records one by one.
     row_num += 1
-"""
+process.start() # the script will block here until the crawling is finished
