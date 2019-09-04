@@ -1,14 +1,13 @@
-
+"""
 link_list = ["1st element", "2nd element", "3rd element"]
 
 def getFullList():
     return link_list
-
+"""
 """
 from test import printPerson,printAge
 import testSettings
 from testSettings import Person
-
 
 counter = 1
 while counter < 4:
@@ -26,3 +25,8 @@ while counter < 4:
     #print(testPerson.name)
     counter += 1
 """
+import globals
+from test import printId
+printId()
+globals.order_id = 2
+printId()

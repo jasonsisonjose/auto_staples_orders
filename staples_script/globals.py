@@ -2,6 +2,8 @@
 global order_id
 order_id = 0
 
+
+
 class Scholar():
     def __init__(self, cwid, first_name, last_name, cohort):
         self.cwid = cwid

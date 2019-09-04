@@ -7,7 +7,7 @@ from globals import Scholar, Order
 import globals
 from sqlite3_script import insertScholar, insertOrder, getOrderId
 
-
+print("\ngoogleSheet.py is starting NOW\n")
 # use creds to create a client to interact with the Google Drive API
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
@@ -62,19 +62,22 @@ while row_num < workSheet.row_count:
         #insert tempCwid and tempQuantity in the database
         insertOrder(tempScholar, tempOrder)
         globals.order_id = getOrderId(tempScholar, tempOrder)
-
+        print ("This is the current global id #: ", globals.order_id )
         tempItem_list.append(tempItem_link)
         print ("THIS IS THE MOTHERFUCKING LIST: ",tempItem_list)
         #use the item link to activate the spider and grab Staples Information
         process = CrawlerProcess(get_project_settings())
-
+        print("Got the process settings")
         # 'staples' is the name of one of the spiders of the project.
         #start_urls must be a list not a string!
         process.crawl('staples', start_urls= tempItem_list)
+
+        print ("did the crawling thing")
         tempItem_list.pop(0)
+        print ("updated the list")
     else:
         print("\nYou aren't simply a clown, for you are the entire circus. Learn to copy and paste a fucking link")
 
     #this for loop, gets the attributes of the records one by one.
     row_num += 1
-process.start() # the script will block here until the crawling is finished
+#process.start() # the script will block here until the crawling is finished

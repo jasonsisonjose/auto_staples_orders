@@ -38,7 +38,7 @@ class StaplesScriptItem(scrapy.Item):
         output_processor = TakeFirst()
     )
     item_name = scrapy.Field(
-        input_processor = MapCompose(remove_tags, remove_symbols, remove_second_half),
+        input_processor = MapCompose(remove_tags, remove_second_half, remove_symbols),
         output_processor = TakeFirst()
         )
     item_price = scrapy.Field()

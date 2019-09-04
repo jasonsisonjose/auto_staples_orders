@@ -8,10 +8,10 @@ import sqlite3
 from sqlite3_script import insertScholar, insertOrder, updateOrder
 from globals import *
 import globals
-
+#from test import order_id
 
 class StaplesScriptPipeline(object):
-    '''
+
     def __init__(self):
         self.create_connection()
 
@@ -30,9 +30,9 @@ class StaplesScriptPipeline(object):
         self.myCursor.execute(updateSql, (item['item_name'], item['item_num'], order_id))
         self.connection.commit()
 
-        '''
 
     def process_item(self, item, spider):
-        #self.updateOrder(item, globals.order_id)
-        print (item["item_num"], item["item_name"])
+        print ("Pipeline Global ID #: ", globals.order_id)
+        print ("item received: ", item['item_name'], "\n Item Number: ",item['item_num'])
+        self.updateOrder(item, order_id)
         return item
